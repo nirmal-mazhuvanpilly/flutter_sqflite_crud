@@ -1,42 +1,60 @@
+import 'dart:io';
+
 import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_flutter/animal.dart';
 
 class DbHelper {
-  static final DbHelper _dbSingleton = DbHelper._internal();
-  factory DbHelper() {
-    return _dbSingleton;
-  }
   DbHelper._internal();
+  static final DbHelper instance = DbHelper._internal();
 
-  late Database database;
+  static const _databaseName = "animal_database.db";
+  static const _databaseVersion = 1;
 
-  Future<void> initializeDB() async {
+  static const _tableName = "animals";
+
+  static const _id = "id";
+  static const _name = "name";
+  static const _age = "age";
+
+  static Database? _database;
+
+  Future<Database?> get database async {
+    if (_database != null) return _database;
+    _database = await _initDatabase();
+    return _database;
+  }
+
+  _initDatabase() async {
+    Directory documentDirectory = await getApplicationDocumentsDirectory();
+    String path = join(documentDirectory.path, _databaseName);
+    return await openDatabase(path,
+        version: _databaseVersion, onCreate: _onCreate);
+  }
+
+  Future _onCreate(Database db, int version) async {
     const create =
-        "CREATE TABLE animals(id INTEGER PRIMARY KEY, name TEXT, age TEXT)";
-    final path = await getDatabasesPath();
-    database = await openDatabase(
-      join(path, 'animal_database.db'),
-      onCreate: (db, version) {
-        return db.execute(create);
-      },
-      version: 1,
-    );
+        "CREATE TABLE $_tableName($_id INTEGER PRIMARY KEY, $_name TEXT NOT NULL, $_age TEXT NOT NULL)";
+    await db.execute(create);
   }
 
   Future<void> insertIntoAnimal(Animal animal) async {
-    final db = database;
-    await db.insert(
-      'animals',
+    Database? db = await database;
+    await db!.insert(
+      _tableName,
       animal.toMap(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 
   Future<List<Animal>> animals() async {
-    final db = database;
+    Database? db = await database;
 
-    final List<Map<String, dynamic>> maps = await db.query('animals');
+    final List<Map<String, dynamic>> maps = await db!.query(_tableName);
+
+    // ignore: avoid_print
+    print(maps);
 
     return List.generate(maps.length, (i) {
       return Animal(
