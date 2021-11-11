@@ -1,10 +1,12 @@
 class Animal {
+  final int? id;
   final String name;
   final String age;
 
   Animal({
     required this.name,
     required this.age,
+    this.id,
   });
 
   Map<String, dynamic> toMap() {

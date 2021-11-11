@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:sqflite_flutter/db_helper.dart';
 import 'package:sqflite_flutter/animal.dart';
+import 'package:sqflite_flutter/update.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,19 +44,21 @@ class _MyHomePageState extends State<MyHomePage> {
 
   bool showList = false;
 
-  final TextStyle captionStyle = TextStyle(color: Colors.blue.shade900,fontWeight: FontWeight.bold);
-  final TextStyle valueStyle = TextStyle(color: Colors.grey.shade800,fontWeight: FontWeight.bold);
+  final TextStyle captionStyle =
+      TextStyle(color: Colors.blue.shade900, fontWeight: FontWeight.bold);
+  final TextStyle valueStyle =
+      TextStyle(color: Colors.grey.shade800, fontWeight: FontWeight.bold);
 
   insertToAnimal({required String name, required String age}) async {
     animal = Animal(name: name, age: age);
     // ignore: avoid_print
     print(animal);
-    await db.insertIntoAnimal(animal);
+    await db.insertIntoAnimals(animal);
     await fetchAnimals();
   }
 
   fetchAnimals() async {
-    dog = await db.animals();
+    dog = await db.getAnimals();
     setState(() {});
   }
 
@@ -138,61 +141,107 @@ class _MyHomePageState extends State<MyHomePage> {
                     child: ListView(
                       children: dog.map((data) {
                         return Container(
-                          margin: const EdgeInsets.symmetric(horizontal:20,vertical: 10),
+                          margin: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
                           padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(5),
                           ),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment: MainAxisAlignment.start,
                             children: <Widget>[
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: <Widget>[
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: <Widget>[
-                                      SizedBox(
-                                        width: 50,
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: <Widget>[
-                                            Text("Name",style: captionStyle),
-                                            Text(":",style: captionStyle),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Text(data.name,style: valueStyle),
-                                    ],
-                                  ),
-                                  const SizedBox(height: 5),
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    children: <Widget>[
-                                      SizedBox(
-                                        width: 50,
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: <Widget>[
-                                            Text("Age",style: captionStyle),
-                                            Text(":",style: captionStyle),
-                                          ],
-                                        ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Text(data.age,style: valueStyle),
-                                    ],
-                                  ),
-                                ],
+                              CircleAvatar(
+                                radius: 15,
+                                child: Text(data.id.toString()),
                               ),
-                              IconButton(
-                                  onPressed: () {},
-                                  icon: const Icon(
-                                    Icons.delete,
-                                    color: Colors.red,
-                                  ))
+                              const SizedBox(width: 15),
+                              SizedBox(
+                                width: 280,
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: <Widget>[
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: <Widget>[
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: <Widget>[
+                                            SizedBox(
+                                              width: 50,
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: <Widget>[
+                                                  Text("Name",
+                                                      style: captionStyle),
+                                                  Text(":",
+                                                      style: captionStyle),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Text(data.name, style: valueStyle),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 5),
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          children: <Widget>[
+                                            SizedBox(
+                                              width: 50,
+                                              child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: <Widget>[
+                                                  Text("Age",
+                                                      style: captionStyle),
+                                                  Text(":",
+                                                      style: captionStyle),
+                                                ],
+                                              ),
+                                            ),
+                                            const SizedBox(width: 10),
+                                            Text(data.age, style: valueStyle),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                    Row(
+                                      children: <Widget>[
+                                        TextButton(
+                                            onPressed: () {
+                                              Navigator.of(context)
+                                                  .push(MaterialPageRoute(
+                                                builder: (_) => UpdateScreen(
+                                                  id: data.id,
+                                                  name: data.name,
+                                                  age: data.age,
+                                                ),
+                                              ))
+                                                  .then((_) {
+                                                fetchAnimals();
+                                              });
+                                            },
+                                            child: Text("Update",
+                                                style: captionStyle)),
+                                        IconButton(
+                                            onPressed: () {},
+                                            icon: const Icon(
+                                              Icons.delete,
+                                              color: Colors.red,
+                                            )),
+                                      ],
+                                    )
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         );
@@ -203,9 +252,7 @@ class _MyHomePageState extends State<MyHomePage> {
               : ElevatedButton(
                   onPressed: () async {
                     await fetchAnimals();
-                    setState(() {
-                      showList = !showList;
-                    });
+                    showList = !showList;
                   },
                   child: const Text("Show List")),
         ],

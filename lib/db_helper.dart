@@ -39,7 +39,7 @@ class DbHelper {
     await db.execute(create);
   }
 
-  Future<void> insertIntoAnimal(Animal animal) async {
+  Future<void> insertIntoAnimals(Animal animal) async {
     Database? db = await database;
     await db!.insert(
       _tableName,
@@ -48,7 +48,7 @@ class DbHelper {
     );
   }
 
-  Future<List<Animal>> animals() async {
+  Future<List<Animal>> getAnimals() async {
     Database? db = await database;
 
     final List<Map<String, dynamic>> maps = await db!.query(_tableName);
@@ -58,9 +58,21 @@ class DbHelper {
 
     return List.generate(maps.length, (i) {
       return Animal(
+        id: maps[i]['id'],
         name: maps[i]['name'],
         age: maps[i]['age'],
       );
     });
+  }
+
+  Future<void> updateIntoAnimals(Animal animal,int id) async {
+    Database? db = await database;
+    await db!.update(_tableName, animal.toMap(),
+        where: "id = ?", whereArgs: [id]);
+  }
+
+  Future<void> deleteFromAnimals() async {
+    Database? db = await database;
+    await db!.delete(_tableName,where: "name = ?",whereArgs: ["Test"]);
   }
 }
