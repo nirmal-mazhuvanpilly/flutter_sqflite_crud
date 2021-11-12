@@ -71,8 +71,8 @@ class DbHelper {
         where: "id = ?", whereArgs: [id]);
   }
 
-  Future<void> deleteFromAnimals() async {
+  Future<void> deleteFromAnimals(int id) async {
     Database? db = await database;
-    await db!.delete(_tableName,where: "name = ?",whereArgs: ["Test"]);
+    await db!.delete(_tableName,where: "id = ?",whereArgs: [id]);
   }
 }

@@ -62,6 +62,11 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {});
   }
 
+  deleteAnimal({required int id}) async {
+    await db.deleteFromAnimals(id);
+    await fetchAnimals();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -232,7 +237,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                             child: Text("Update",
                                                 style: captionStyle)),
                                         IconButton(
-                                            onPressed: () {},
+                                            onPressed: () {
+                                              deleteAnimal(id: data.id!);
+                                            },
                                             icon: const Icon(
                                               Icons.delete,
                                               color: Colors.red,
