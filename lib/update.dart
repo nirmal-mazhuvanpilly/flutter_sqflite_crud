@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:sqflite_flutter/animal.dart';
-import 'package:sqflite_flutter/db_helper.dart';
+import 'package:provider/provider.dart';
+import 'package:sqflite_flutter/animal_provider.dart';
 
 class UpdateScreen extends StatefulWidget {
   final int? id;
   final String? name;
   final String? age;
+  // ignore: use_key_in_widget_constructors
   const UpdateScreen({this.id, this.age, this.name});
 
   @override
@@ -13,36 +14,27 @@ class UpdateScreen extends StatefulWidget {
 }
 
 class _UpdateScreenState extends State<UpdateScreen> {
-  final DbHelper db = DbHelper.instance;
 
-  final TextEditingController nameController = TextEditingController();
-  final TextEditingController ageController = TextEditingController();
-
-  late Animal animal;
-
-  updateToAnimal({required String name, required String age}) async {
-    animal = Animal(name: name, age: age);
-    // ignore: avoid_print
-    print(animal);
-    await db.updateIntoAnimals(animal, widget.id!);
-  }
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _ageController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    nameController.text = widget.name!;
-    ageController.text = widget.age!;
+    _nameController.text = widget.name!;
+    _ageController.text = widget.age!;
   }
 
   @override
   void dispose() {
-    nameController.dispose();
-    ageController.dispose();
+    _nameController.dispose();
+    _ageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final animalModel = Provider.of<AnimalProvider>(context, listen: false);
     return Scaffold(
       appBar: AppBar(
         title: Text("${widget.name}"),
@@ -56,7 +48,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
               margin: const EdgeInsets.all(20),
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: TextField(
-                controller: nameController,
+                controller: _nameController,
                 decoration: const InputDecoration(
                   hintText: "Update animal name",
                   hintStyle: TextStyle(color: Colors.blue),
@@ -71,7 +63,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
               margin: const EdgeInsets.all(20),
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: TextField(
-                controller: ageController,
+                controller: _ageController,
                 decoration: const InputDecoration(
                   hintText: "Update animal age",
                   hintStyle: TextStyle(color: Colors.blue),
@@ -86,10 +78,9 @@ class _UpdateScreenState extends State<UpdateScreen> {
                 width: double.infinity,
                 child: ElevatedButton(
                     onPressed: () {
-                      if (nameController.text.isNotEmpty &&
-                          ageController.text.isNotEmpty) {
-                        updateToAnimal(
-                            name: nameController.text, age: ageController.text);
+                      if (_nameController.text.isNotEmpty &&
+                          _ageController.text.isNotEmpty) {
+                        animalModel.updateToAnimal(name: _nameController.text, age: _ageController.text,id: widget.id!);
                         Navigator.of(context).pop();
                       } else {
                         const showSnackBar = SnackBar(
