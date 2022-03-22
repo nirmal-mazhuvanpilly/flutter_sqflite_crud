@@ -21,16 +21,6 @@ class ContactsProvider with ChangeNotifier {
     return await rootBundle.loadString('assets/$asset.json');
   }
 
-  Future<void> loadContacts() async {
-    String jsonString = await _loadAsset("contacts");
-    final jsonResponse = json.decode(jsonString);
-    lists = ContactsList.fromJson(jsonResponse);
-    if (lists?.contactList != null) {
-      await insertToContacts(lists);
-    }
-    await fetchContacts();
-  }
-
   Future<void> insertToContacts(ContactsList? lists) async {
     if (lists?.contactList != null && lists!.contactList!.isNotEmpty) {
       lists.contactList?.forEach((element) async {
@@ -39,7 +29,17 @@ class ContactsProvider with ChangeNotifier {
     }
   }
 
-  Future<void> fetchContacts() async {
-    List<Contacts> contactLists = await _db.getContacts();
+  Future<void> loadContacts() async {
+    lists?.contactList = await _db.getContacts();
+
+    if (lists?.contactList == null) {
+      String jsonString = await _loadAsset("contacts");
+      final jsonResponse = json.decode(jsonString);
+      lists = ContactsList.fromJson(jsonResponse);
+      if (lists?.contactList != null) {
+        await insertToContacts(lists);
+      }
+    }
+    notifyListeners();
   }
 }
