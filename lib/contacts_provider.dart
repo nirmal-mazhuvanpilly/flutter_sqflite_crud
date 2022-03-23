@@ -8,11 +8,11 @@ import 'package:sqflite_flutter/contacts_db_helper.dart';
 class ContactsProvider with ChangeNotifier {
   final ContactsDbHelper _db = ContactsDbHelper.instance;
 
-  ContactsList? _lists;
+  List<Contacts>? _lists;
 
-  ContactsList? get lists => _lists;
+  List<Contacts>? get lists => _lists;
 
-  set lists(ContactsList? lists) {
+  set lists(List<Contacts>? lists) {
     _lists = lists;
     notifyListeners();
   }
@@ -21,22 +21,24 @@ class ContactsProvider with ChangeNotifier {
     return await rootBundle.loadString('assets/$asset.json');
   }
 
-  Future<void> insertToContacts(ContactsList? lists) async {
-    if (lists?.contactList != null && lists!.contactList!.isNotEmpty) {
-      lists.contactList?.forEach((element) async {
+  Future<void> insertToContacts(ContactsList? _lists) async {
+    if (_lists?.contactList != null && _lists!.contactList!.isNotEmpty) {
+      _lists.contactList?.forEach((element) async {
         await _db.insertIntoContacts(element);
       });
     }
+    lists = await _db.getContacts();
+    notifyListeners();
   }
 
   Future<void> loadContacts() async {
-    lists?.contactList = await _db.getContacts();
+    lists = await _db.getContacts();
 
-    if (lists?.contactList == null) {
+    if (lists == null || lists!.isEmpty) {
       String jsonString = await _loadAsset("contacts");
       final jsonResponse = json.decode(jsonString);
-      lists = ContactsList.fromJson(jsonResponse);
-      if (lists?.contactList != null) {
+      ContactsList? lists = ContactsList.fromJson(jsonResponse);
+      if (lists.contactList != null) {
         await insertToContacts(lists);
       }
     }
